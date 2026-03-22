@@ -41,16 +41,12 @@ jobs:
           # ✅ Add this line to force the filename
           report_name: 'zap_report'
 
-      # --- STEP 3: ARTIFACT UPLOAD ---
+     # --- STEP 3: ARTIFACT UPLOAD ---
       - name: 📊 Upload Security Reports
         uses: actions/upload-artifact@v4
         with:
           name: kamaraj-security-reports
-          # Use wildcards to ensure we catch the files even if names change slightly
-          path: |
-            python_report.txt
-            report_html.html
-            *.html
           path: |
             python_report.txt
             zap_report.html
+            report_html.html
