@@ -46,6 +46,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kamaraj-security-reports
+          # Use wildcards to ensure we catch the files even if names change slightly
+          path: |
+            python_report.txt
+            report_html.html
+            *.html
           path: |
             python_report.txt
             zap_report.html
