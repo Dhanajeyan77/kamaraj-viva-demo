@@ -1,5 +1,15 @@
 name: Kamaraj Security Audit
-on: [workflow_dispatch, push]
+
+# 🛡️ THE API CONTRACT: This allows Flask to send data to GitHub
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'The live URL to scan with ZAP'
+        required: false
+        default: ''
+  push:
+    branches: [ "main" ]
 
 jobs:
   security_scan:
@@ -8,27 +18,32 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
+      # --- STEP 1: STATIC ANALYSIS (SAST) ---
       - name: 🐍 Python Static Analysis (Bandit)
         run: |
           pip install bandit
-          # Scan the 'src' folder and save results
+          # Scan the 'src' folder specifically
           bandit -r src/ -f txt > python_report.txt || true
 
       - name: ☕ Java Static Analysis
         run: |
-          # Simple check for hardcoded secrets in Java
-          grep -rnE "password|secret|key" src/*.java > java_report.txt || true
+          # Simple grep to find hardcoded passwords or secrets
+          grep -rE "password|secret|key" src/ || true
 
-      - name: 🌐 Live URL Scan (ZAP)
+      # --- STEP 2: DYNAMIC ANALYSIS (DAST) ---
+      # This ONLY runs if you typed a URL into your Flask Portal
+      - name: 🌐 ZAP Web Audit
+        if: "${{ github.event.inputs.target_url != '' }}"
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          # Replace with a test URL like 'https://www.google.com' for the demo
-          target: 'https://www.google.com' 
+          target: "${{ github.event.inputs.target_url }}"
+          fail_action: false
 
-      - name: 📤 Upload Reports
+      # --- STEP 3: ARTIFACT UPLOAD ---
+      - name: 📊 Upload Security Reports
         uses: actions/upload-artifact@v4
         with:
-          name: kamaraj-viva-reports
+          name: kamaraj-security-reports
           path: |
             python_report.txt
-            java_report.txt
+            zap_report.html
