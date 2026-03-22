@@ -38,6 +38,8 @@ jobs:
         with:
           target: "${{ github.event.inputs.target_url }}"
           fail_action: false
+          # ✅ Add this line to force the filename
+          report_name: 'zap_report'
 
       # --- STEP 3: ARTIFACT UPLOAD ---
       - name: 📊 Upload Security Reports
